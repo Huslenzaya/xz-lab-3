@@ -1,0 +1,64 @@
+[
+  {
+    "title": "Sunny 2BR apartment near city center",
+    "description": "Cozy 2 bedroom apartment with balcony, close to public transport and supermarkets.",
+    "pricePerMonth": 1200000,
+    "address": "Sukhbaatar district, 1st khoroo, Ulaanbaatar",
+    "latitude": 47.918,
+    "longitude": 106.917,
+    "category": "apartment",
+    "status": "active",
+    "contactName": "Bat Erdene",
+    "phone": "9911-0001",
+    "email": "bat@example.com"
+  },
+  {
+    "title": "Spacious office space in downtown",
+    "description": "Open-plan office suitable for 10–15 people, includes meeting room.",
+    "pricePerMonth": 3500000,
+    "address": "Chingeltei district, 3rd khoroo, Ulaanbaatar",
+    "latitude": 47.923,
+    "longitude": 106.91,
+    "category": "office",
+    "status": "active",
+    "contactName": "Suvd",
+    "phone": "8811-2233",
+    "email": "office@example.com"
+  },
+  {
+    "title": "Small studio for students",
+    "description": "Affordable studio, fully furnished, close to university.",
+    "pricePerMonth": 700000,
+    "address": "Bayanzurkh district, 5th khoroo, Ulaanbaatar",
+    "latitude": 47.924,
+    "longitude": 106.95,
+    "category": "apartment",
+    "status": "active",
+    "contactName": "Bold",
+    "phone": "9900-1122"
+  },
+  {
+    "title": "Family house with yard",
+    "description": "3 bedroom house with a yard, quiet neighborhood, perfect for families.",
+    "pricePerMonth": 2500000,
+    "address": "Songinokhairkhan district, Ulaanbaatar",
+    "latitude": 47.93,
+    "longitude": 106.82,
+    "category": "house",
+    "status": "active",
+    "contactName": "Tungalag",
+    "phone": "9600-3344"
+  },
+  {
+    "title": "Land for long term lease",
+    "description": "Land suitable for small warehouse or workshop.",
+    "pricePerMonth": 1500000,
+    "address": "Nalaikh district, Ulaanbaatar",
+    "latitude": 47.78,
+    "longitude": 107.25,
+    "category": "land",
+    "status": "archived",
+    "contactName": "Ganbaatar",
+    "phone": "9511-5566"
+  }
+]
