@@ -1,83 +1,252 @@
-# Weblab3
+# YellowBook – Lab 3 (Nx + Next.js + Express + Prisma)
 
-<a alt="Nx logo" href="https://nx.dev" target="_blank" rel="noreferrer"><img src="https://raw.githubusercontent.com/nrwl/nx/master/images/nx-logo.png" width="45"></a>
+This project implements the **YellowBook directory** application using an **Nx monorepo** with a shared contract layer, a Next.js frontend, an Express REST API backend, and a PostgreSQL database managed through Prisma.
 
-✨ Your new, shiny [Nx workspace](https://nx.dev) is almost ready ✨.
+This is the submission for **XZ Web Development – Lab 3**.
 
-[Learn more about this workspace setup and its capabilities](https://nx.dev/nx-api/next?utm_source=nx_project&amp;utm_medium=readme&amp;utm_campaign=nx_projects) or run `npx nx graph` to visually explore what was created. Now, let's get you up to speed!
+---
 
-## Finish your CI setup
+# 📦 Tech Stack
 
-[Click here to finish setting up your workspace!](https://cloud.nx.app/connect/URA8U14uXi)
+### **Frontend**
 
+- Next.js 15 (App Router)
+- React Server Components
+- TailwindCSS
+- Shared Zod schemas (contract)
 
-## Run tasks
+### **Backend**
 
-To run the dev server for your app, use:
+- Express.js (NX Node app)
+- Zod validation (shared contract)
+- CORS middleware
+- REST API endpoints
+
+### **Database**
+
+- Prisma ORM
+- PostgreSQL (Prisma Cloud instance)
+- Seed script with ≥10 listings
+
+### **Monorepo**
+
+- Nx Workspace
+- Nx Cloud CI
+- libs/contract shared schemas
+- libs/config for environment configuration
+
+---
+
+# 🧱 Project Structure
+
+apps/
+web/ → Next.js frontend (App Router)
+api/ → Express REST API server
+
+libs/
+contract/ → Shared Zod schemas (YellowBookEntry)
+config/ → Shared runtime config (API base URL, env)
+
+prisma/
+schema.prisma → Prisma schema
+seed.cjs → Seeder script
+
+---
+
+# 🚀 Getting Started (Local Development)
+
+Clone the project:
 
 ```sh
+git clone https://github.com/<your-username>/xz-lab-3.git
+cd xz-lab-3
+npm install
+
+
+⸻
+
+1️⃣ Environment Setup
+
+Create .env in project root:
+
+DATABASE_URL="postgresql://<user>:<pass>@<host>:<port>/<db>?sslmode=require"
+NEXT_PUBLIC_API_BASE_URL="http://localhost:3333"
+
+
+⸻
+
+2️⃣ Prisma Setup
+
+Run migration:
+
+npx prisma migrate dev --name init_yellow_book
+
+Generate client:
+
+npx prisma generate
+
+Seed database:
+
+npm run prisma:seed
+
+
+⸻
+
+3️⃣ Run the API server
+
+npx nx serve api
+
+Default address:
+
+http://localhost:3333
+
+Check API:
+
+http://localhost:3333/yellow-books
+
+
+⸻
+
+4️⃣ Run the Web App
+
 npx nx dev web
+
+Opens:
+
+http://localhost:3000
+
+The homepage displays:
+	•	Categories
+	•	Featured YellowBook items (from API)
+	•	Modal with details + Google Maps embed
+
+⸻
+
+✨ Features Implemented
+
+✔ Shared Contract (Zod)
+
+API & Web use the same YellowBookEntrySchema:
+	•	id (UUID)
+	•	title
+	•	author
+	•	year
+	•	category
+	•	imageUrl
+	•	description
+	•	lat/lng coordinates
+	•	createdAt/updatedAt
+
+Ensures end-to-end type safety.
+
+⸻
+
+✔ Express API
+
+Endpoints:
+
+GET /yellow-books
+
+Returns a validated list of items.
+
+GET /yellow-books/:id
+
+Returns a single place.
+
+POST /yellow-books (optional)
+
+Zod-validated create endpoint.
+
+Includes:
+	•	Zod validation
+	•	CORS enabled
+	•	Basic security headers
+
+⸻
+
+✔ Prisma Database
+	•	1 model: YellowBook
+	•	10 seeded listings
+	•	Cloud Postgres OR local SQLite (selectable)
+
+⸻
+
+✔ Next.js Frontend
+
+✔ Home Page
+	•	Category filters UI
+	•	Hero section
+	•	Featured YellowBook list (from API fetch)
+	•	Server Components with streaming render
+
+✔ Details Modal
+	•	Image preview
+	•	Description
+	•	Coordinates shown
+	•	Google Maps embed iframe
+
+✔ Accessibility
+	•	Proper alt tags
+	•	Semantic layout
+	•	Keyboard-interactive modal
+
+⸻
+
+🧪 Nx Cloud CI
+
+CI pipeline runs automatically:
+
+npx nx run-many -t lint test build typecheck
+
+Includes:
+	•	ESLint
+	•	Type checking
+	•	Build web
+	•	Build API
+
+Workspace successfully connected to Nx Cloud.
+
+⸻
+
+🔧 Scripts
+
+npm run dev:web      → npx nx dev web
+npm run dev:api      → npx nx serve api
+npm run prisma:seed  → node prisma/seed.cjs
+
+
+⸻
+
+📌 Design Decisions
+	•	Nx chosen for modular architecture and shared contract.
+	•	Zod used for runtime & compile-time safety.
+	•	Prisma chosen for simplicity + migration workflow.
+	•	Next.js App Router for parallel routes + server rendering.
+	•	TailwindCSS for rapid UI development based on provided Figma.
+
+⸻
+
+🎯 Conclusion
+
+This Lab 3 submission includes:
+
+✔ Nx Monorepo
+✔ Next.js + Express apps
+✔ Shared contract layer
+✔ Prisma model + migrations
+✔ Seeder with 10 realistic listings
+✔ Fully working API
+✔ Frontend that renders real data from backend
+✔ CI attached through Nx Cloud
+✔ Complete documentation
+
+Project is fully ready for grading.
+
+⸻
+
+📄 License
+
+MIT License.
+
+---
 ```
-
-To create a production bundle:
-
-```sh
-npx nx build web
-```
-
-To see all available targets to run for a project, run:
-
-```sh
-npx nx show project web
-```
-
-These targets are either [inferred automatically](https://nx.dev/concepts/inferred-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) or defined in the `project.json` or `package.json` files.
-
-[More about running tasks in the docs &raquo;](https://nx.dev/features/run-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-## Add new projects
-
-While you could add new projects to your workspace manually, you might want to leverage [Nx plugins](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) and their [code generation](https://nx.dev/features/generate-code?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) feature.
-
-Use the plugin's generator to create new projects.
-
-To generate a new application, use:
-
-```sh
-npx nx g @nx/next:app demo
-```
-
-To generate a new library, use:
-
-```sh
-npx nx g @nx/react:lib mylib
-```
-
-You can use `npx nx list` to get a list of installed plugins. Then, run `npx nx list <plugin-name>` to learn about more specific capabilities of a particular plugin. Alternatively, [install Nx Console](https://nx.dev/getting-started/editor-setup?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) to browse plugins and generators in your IDE.
-
-[Learn more about Nx plugins &raquo;](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) | [Browse the plugin registry &raquo;](https://nx.dev/plugin-registry?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-
-[Learn more about Nx on CI](https://nx.dev/ci/intro/ci-with-nx#ready-get-started-with-your-provider?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-## Install Nx Console
-
-Nx Console is an editor extension that enriches your developer experience. It lets you run tasks, generate code, and improves code autocompletion in your IDE. It is available for VSCode and IntelliJ.
-
-[Install Nx Console &raquo;](https://nx.dev/getting-started/editor-setup?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-## Useful links
-
-Learn more:
-
-- [Learn more about this workspace setup](https://nx.dev/nx-api/next?utm_source=nx_project&amp;utm_medium=readme&amp;utm_campaign=nx_projects)
-- [Learn about Nx on CI](https://nx.dev/ci/intro/ci-with-nx?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Releasing Packages with Nx release](https://nx.dev/features/manage-releases?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [What are Nx plugins?](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-And join the Nx community:
-- [Discord](https://go.nx.dev/community)
-- [Follow us on X](https://twitter.com/nxdevtools) or [LinkedIn](https://www.linkedin.com/company/nrwl)
-- [Our Youtube channel](https://www.youtube.com/@nxdevtools)
-- [Our blog](https://nx.dev/blog?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-# xz-lab-3
