@@ -1,25 +1,50 @@
-// src/components/yellowbooks/YellowBooksGrid.tsx
+// apps/web/src/components/yellowbooks/YellowBooksGrid.tsx
 'use client';
 
-import React, { useMemo, useState } from 'react';
-import type { YellowBook } from '@/app/page';
+import { useMemo, useState } from 'react';
+
+// API-аас ирж буй бүтэцтэй таарах орон нутгийн type
+type YellowBookForGrid = {
+  id: string;
+  title: string;
+  description: string;
+  pricePerMonth: number;
+  address: string;
+  latitude: number;
+  longitude: number;
+  category: string;
+  status: string;
+  contactName: string;
+  phone: string;
+  publishedAt: Date | string;
+  // Prisma дээр String? учраас null байж болно, JSON-оор ирэхдээ байхгүй байж бас болно
+  email?: string | null;
+};
 
 type Props = {
-  books: YellowBook[];
+  books: YellowBookForGrid[];
 };
 
 export default function YellowBooksGrid({ books }: Props) {
-  const [selected, setSelected] = useState<YellowBook | null>(null);
+  const [selected, setSelected] = useState<YellowBookForGrid | null>(null);
 
-  const formattedPublishedAt = useMemo(() => {
+  // modal дотор ашиглах format-ласан огноо
+  const formattedSelectedDates = useMemo(() => {
     if (!selected) return null;
-    const date =
+
+    const published =
       selected.publishedAt instanceof Date
         ? selected.publishedAt
         : new Date(selected.publishedAt);
 
-    return date.toLocaleString();
+    return {
+      published: published.toLocaleString(),
+    };
   }, [selected]);
+
+  const getCoverImage = (book: YellowBookForGrid) =>
+    // DB-д imageUrl байхгүй тул id дээр суурилсан fallback зураг ашиглая
+    `https://picsum.photos/seed/${book.id}/400/300`;
 
   return (
     <>
@@ -31,14 +56,10 @@ export default function YellowBooksGrid({ books }: Props) {
             onClick={() => setSelected(book)}
             className="group overflow-hidden rounded-3xl bg-white text-left shadow-sm transition hover:-translate-y-1 hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-400"
           >
-            {/* Image – одоохондоо placeholder */}
+            {/* Image */}
             <div className="h-40 w-full overflow-hidden">
               <img
-                src={
-                  book.email
-                    ? `https://picsum.photos/seed/${book.id}/400/300`
-                    : 'https://picsum.photos/seed/fallback/400/300'
-                }
+                src={getCoverImage(book)}
                 alt={book.title}
                 className="h-full w-full object-cover transition group-hover:scale-105"
               />
@@ -52,10 +73,7 @@ export default function YellowBooksGrid({ books }: Props) {
                     {book.title}
                   </h3>
                   <p className="text-[11px] text-slate-500 sm:text-xs">
-                    {book.address}
-                  </p>
-                  <p className="text-[11px] text-slate-500 sm:text-xs">
-                    {book.contactName} · {book.category}
+                    {book.category} · {book.address}
                   </p>
                 </div>
                 <div className="flex flex-col items-end gap-1 text-right">
@@ -87,14 +105,14 @@ export default function YellowBooksGrid({ books }: Props) {
       </div>
 
       {/* Modal */}
-      {selected && formattedPublishedAt && (
+      {selected && formattedSelectedDates && (
         <div
           className="fixed inset-0 z-40 flex items-center justify-center bg-black/40 px-4"
-          onClick={() => setSelected(null)}
+          onClick={() => setSelected(null)} // background дээр дарахад хаагдана
         >
           <div
             className="relative flex max-h-[90vh] w-full max-w-xl flex-col overflow-hidden rounded-3xl bg-white shadow-2xl transition"
-            onClick={(e) => e.stopPropagation()}
+            onClick={(e) => e.stopPropagation()} // дотор нь дарахад хаагдахгүй
           >
             {/* Close button */}
             <button
@@ -110,26 +128,23 @@ export default function YellowBooksGrid({ books }: Props) {
               {/* Cover image */}
               <div className="h-40 w-full overflow-hidden">
                 <img
-                  src={
-                    selected.email
-                      ? `https://picsum.photos/seed/${selected.id}/600/400`
-                      : 'https://picsum.photos/seed/fallback/600/400'
-                  }
+                  src={getCoverImage(selected)}
                   alt={selected.title}
                   className="h-full w-full object-cover"
                 />
               </div>
 
               {/* Text info */}
-              <div className="space-y-3 px  -6 pb-4 pt-5">
+              <div className="space-y-3 px-6 pb-4 pt-5">
                 <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-yellow-600">
                   YellowBook · {selected.category}
                 </p>
                 <h2 className="text-lg font-semibold text-slate-900">
                   {selected.title}
                 </h2>
+
                 <p className="text-xs text-slate-500">
-                  {selected.address}
+                  {selected.address} · Статус: {selected.status}
                 </p>
 
                 <p className="text-[11px] leading-relaxed text-slate-600 sm:text-xs">
@@ -139,19 +154,13 @@ export default function YellowBooksGrid({ books }: Props) {
                 <div className="mt-3 grid grid-cols-2 gap-3 text-[11px] text-slate-600 sm:text-xs">
                   <div>
                     <div className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
-                      Ангилал
-                    </div>
-                    <div>{selected.category}</div>
-                  </div>
-                  <div>
-                    <div className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
-                      Үнэ
+                      Түрээсийн үнэ
                     </div>
                     <div>{selected.pricePerMonth.toLocaleString()} ₮ / сар</div>
                   </div>
                   <div>
                     <div className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
-                      Координат
+                      Байршил (координат)
                     </div>
                     <div>
                       Lat: {selected.latitude.toFixed(4)}, Lng:{' '}
@@ -160,19 +169,9 @@ export default function YellowBooksGrid({ books }: Props) {
                   </div>
                   <div>
                     <div className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
-                      Холбоо барих
+                      Нэмэгдсэн
                     </div>
-                    <div className="space-y-0.5">
-                      <p>Нэр: {selected.contactName}</p>
-                      <p>Утас: {selected.phone}</p>
-                      {selected.email && <p>Имэйл: {selected.email}</p>}
-                    </div>
-                  </div>
-                  <div>
-                    <div className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
-                      Нийтэлсэн
-                    </div>
-                    <div>{formattedPublishedAt}</div>
+                    <div>{formattedSelectedDates.published}</div>
                   </div>
                 </div>
               </div>
@@ -202,10 +201,7 @@ export default function YellowBooksGrid({ books }: Props) {
             {/* Bottom actions */}
             <div className="flex items-center justify-between border-t px-6 py-3 text-[11px] text-slate-500">
               <span className="truncate">
-                ID:{' '}
-                <span className="font-mono text-[10px]">
-                  {selected.id}
-                </span>
+                ID: <span className="font-mono text-[10px]">{selected.id}</span>
               </span>
               <button
                 type="button"

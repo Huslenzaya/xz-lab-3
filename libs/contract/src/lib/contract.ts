@@ -20,7 +20,6 @@ export const YellowBookEntrySchema = z.object({
 
   category: YellowBookCategoryEnum,
   status: YellowBookStatusEnum,
-
   contactName: z.string().min(2),
   phone: z.string().min(5),
   email: z.string().email().optional(),
