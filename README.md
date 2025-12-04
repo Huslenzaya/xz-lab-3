@@ -1,252 +1,347 @@
-# YellowBook – Lab 3 (Nx + Next.js + Express + Prisma)
+# YellowBook – Labs 3, 4, 5
 
-This project implements the **YellowBook directory** application using an **Nx monorepo** with a shared contract layer, a Next.js frontend, an Express REST API backend, and a PostgreSQL database managed through Prisma.
+Nx + Next.js + Express + Prisma + Docker + AWS ECR
 
-This is the submission for **XZ Web Development – Lab 3**.
+![CI](https://github.com/Huslenzaya/xz-lab-3/actions/workflows/ci.yml/badge.svg)
+
+Энэ репо нь **YellowBook directory** төслийг Nx монорепо дээр хэрэгжүүлсэн хувилбар бөгөөд:
+
+- **apps/web** – Next.js 15 (App Router) фронт
+- **apps/api** – Express REST API + Prisma
+- **libs/contract** – API & Web хоорондоо хуваалцдаг Zod схемүүд
+- **libs/config** – тохиргооны давхардлыг бууруулсан config давхарга
+- **prisma** – PostgreSQL schema + migration + seed
+
+Доорх тайлбар нь Lab 3, Lab 4, Lab 5-ийн даалгаврыг хэрхэн биелүүлснийг харуулна.
 
 ---
 
-# 📦 Tech Stack
+## 📦 Tech Stack
 
-### **Frontend**
+### Frontend (apps/web)
 
-- Next.js 15 (App Router)
-- React Server Components
+- Next.js 15 – App Router, Server Components
+- React + Suspense, Streaming
 - TailwindCSS
-- Shared Zod schemas (contract)
+- Shared Zod contract-оос үүсгэсэн төрөлүүд
+- Google Maps iframe (client island)
 
-### **Backend**
+### Backend (apps/api)
 
-- Express.js (NX Node app)
-- Zod validation (shared contract)
-- CORS middleware
-- REST API endpoints
+- Express.js (Nx Node app)
+- Shared Zod `YellowBookEntry` validation
+- CORS + энгийн security header-ууд
+- `/yellow-books` REST endpoint-ууд
 
-### **Database**
+### Database (Prisma)
 
 - Prisma ORM
-- PostgreSQL (Prisma Cloud instance)
-- Seed script with ≥10 listings
+- PostgreSQL (Prisma Data Platform – `db.prisma.io`)
+- 5+ реалист YellowBook listings бүхий seed
 
-### **Monorepo**
+### Monorepo / DevX
 
-- Nx Workspace
-- Nx Cloud CI
-- libs/contract shared schemas
-- libs/config for environment configuration
+- Nx workspace (`apps/`, `libs/`)
+- Nx Cloud (CI cache + run details)
+- ESLint + Prettier + TypeScript strict typecheck
+- GitHub Actions CI
 
 ---
 
-# 🧱 Project Structure
+## 🧱 Folder Structure
 
+```bash
 apps/
-web/ → Next.js frontend (App Router)
-api/ → Express REST API server
+  api/        # Express + Prisma API
+    src/main.ts
+    Dockerfile
+  web/        # Next.js 15 frontend
+    src/app/...
+    Dockerfile
 
 libs/
-contract/ → Shared Zod schemas (YellowBookEntry)
-config/ → Shared runtime config (API base URL, env)
+  contract/   # Zod schemas + shared types
+  config/     # API base URL, runtime configs
 
 prisma/
-schema.prisma → Prisma schema
-seed.cjs → Seeder script
+  schema.prisma
+  seed.cjs    # inserts sample YellowBook rows
 
----
+.tmp/, .nx/, .github/workflows/ci.yml ...
 
-# 🚀 Getting Started (Local Development)
 
-Clone the project:
+⸻
 
-```sh
-git clone https://github.com/<your-username>/xz-lab-3.git
+🚀 Getting Started (Local Dev)
+
+1️⃣ Clone & Install
+
+git clone https://github.com/Huslenzaya/xz-lab-3.git
 cd xz-lab-3
 npm install
 
+2️⃣ Environment variables
 
-⸻
+./.env файл үүсгээд:
 
-1️⃣ Environment Setup
+# Prisma Postgres (Prisma Data Platform)
+DATABASE_URL="postgres://<user>:<password>@db.prisma.io:5432/postgres?sslmode=require"
 
-Create .env in project root:
-
-DATABASE_URL="postgresql://<user>:<pass>@<host>:<port>/<db>?sslmode=require"
+# Web app → API руу хандах URL
 NEXT_PUBLIC_API_BASE_URL="http://localhost:3333"
 
+3️⃣ Prisma
 
-⸻
-
-2️⃣ Prisma Setup
-
-Run migration:
-
+# Migration (хоёрдахь удаа ажиллуулах шаардлагагүй)
 npx prisma migrate dev --name init_yellow_book
 
-Generate client:
-
+# Client
 npx prisma generate
 
-Seed database:
-
+# Seed (5+ yellow book listing)
 npm run prisma:seed
 
-
-⸻
-
-3️⃣ Run the API server
+4️⃣ API server (dev)
 
 npx nx serve api
+# http://localhost:3333
+# http://localhost:3333/yellow-books
 
-Default address:
-
-http://localhost:3333
-
-Check API:
-
-http://localhost:3333/yellow-books
-
-
-⸻
-
-4️⃣ Run the Web App
+5️⃣ Web app (dev)
 
 npx nx dev web
+# http://localhost:3000
 
-Opens:
-
-http://localhost:3000
-
-The homepage displays:
-	•	Categories
-	•	Featured YellowBook items (from API)
-	•	Modal with details + Google Maps embed
 
 ⸻
 
-✨ Features Implemented
+🧪 CI & Quality
 
-✔ Shared Contract (Zod)
-
-API & Web use the same YellowBookEntrySchema:
-	•	id (UUID)
-	•	title
-	•	author
-	•	year
-	•	category
-	•	imageUrl
-	•	description
-	•	lat/lng coordinates
-	•	createdAt/updatedAt
-
-Ensures end-to-end type safety.
-
-⸻
-
-✔ Express API
-
-Endpoints:
-
-GET /yellow-books
-
-Returns a validated list of items.
-
-GET /yellow-books/:id
-
-Returns a single place.
-
-POST /yellow-books (optional)
-
-Zod-validated create endpoint.
-
-Includes:
-	•	Zod validation
-	•	CORS enabled
-	•	Basic security headers
-
-⸻
-
-✔ Prisma Database
-	•	1 model: YellowBook
-	•	10 seeded listings
-	•	Cloud Postgres OR local SQLite (selectable)
-
-⸻
-
-✔ Next.js Frontend
-
-✔ Home Page
-	•	Category filters UI
-	•	Hero section
-	•	Featured YellowBook list (from API fetch)
-	•	Server Components with streaming render
-
-✔ Details Modal
-	•	Image preview
-	•	Description
-	•	Coordinates shown
-	•	Google Maps embed iframe
-
-✔ Accessibility
-	•	Proper alt tags
-	•	Semantic layout
-	•	Keyboard-interactive modal
-
-⸻
-
-🧪 Nx Cloud CI
-
-CI pipeline runs automatically:
+GitHub Actions-д дараах командууд автоматаар ажиллана:
 
 npx nx run-many -t lint test build typecheck
 
-Includes:
-	•	ESLint
-	•	Type checking
-	•	Build web
-	•	Build API
+	•	lint – ESLint
+	•	build – API + Web production build
+	•	typecheck – TypeScript --noEmit
+	•	Nx Cloud cache ашиглаж хурдыг нэмсэн.
 
-Workspace successfully connected to Nx Cloud.
+CI badge дээрээс хамгийн сүүлийн байдлыг харж болно.
 
 ⸻
 
-🔧 Scripts
+🟡 Lab 3 – Nx + Contract + Prisma + Basic API & Web
 
-npm run dev:web      → npx nx dev web
-npm run dev:api      → npx nx serve api
-npm run prisma:seed  → node prisma/seed.cjs
+Үүрэг
+	•	Nx монорепо (apps/web, apps/api, libs/contract, libs/config)
+	•	Shared Zod YellowBookEntrySchema
+	•	Prisma model + migration + seed
+	•	/yellow-books endpoint болон фронт жагсаалт
+
+Хэрэгжилт
+
+Contract (libs/contract)
+	•	YellowBookEntrySchema – API ба Web хоёулангын хэрэглэж буй гол schema.
+	•	Талбарууд (богинохон хувилбар):
+	•	id: string (uuid)
+	•	title: string
+	•	description: string
+	•	pricePerMonth: number
+	•	address: string
+	•	latitude / longitude: number
+	•	category: string
+	•	status: string
+	•	contactName: string
+	•	phone: string
+	•	email?: string | null
+	•	publishedAt: Date
+
+Prisma (prisma/schema.prisma)
+
+model YellowBook {
+  id            String   @id @default(uuid())
+  title         String
+  description   String
+  pricePerMonth Int
+  address       String
+  latitude      Float
+  longitude     Float
+  category      String
+  status        String
+  contactName   String
+  phone         String
+  email         String?
+  publishedAt   DateTime @default(now())
+}
+
+API (apps/api)
+	•	GET /yellow-books – Prisma-гаар DB-ээс уншиж, Zod-оор validate хийгээд буцаана.
+	•	GET /yellow-books/:id – ганц байгууллагын дэлгэрэнгүй.
+	•	Хэрэв алдаа гарвал 500 { error: "Internal server error" }.
+
+Web (apps/web)
+	•	Нүүр хуудас /
+	•	Hero блок
+	•	Category chips
+	•	“Онцлох шар номнууд” – API-аас ирсэн жагсаалтаар.
+	•	List component: YellowBooksGrid – shared YellowBook төрөл ашиглана.
+	•	Details page (Lab 4-тэй хамт доор тайлбарласан).
+
+⸻
+
+🌐 Lab 4 – Rendering Modes, Streaming & Search
+
+Lab 4-ийн зорилго: Next.js дээр янз бүрийн render стратеги ашиглах.
+
+1. /yellow-books – ISR + Streaming Section
+	•	src/app/yellow-books/page.tsx
+	•	export const revalidate = 60 – 60 секунд тутамд ISR.
+	•	Сайтын нэг хэсэг (жагсаалт) дээр Suspense ашиглан streaming fallback үзүүлдэг.
+	•	API-аас /yellow-books fetch хийж, Zod schema-аар validate хийнэ.
+
+2. /yellow-books/[id] – SSG + On-demand revalidation
+	•	generateStaticParams ашиглаж анхны 5–6 listing-ийг build дээр статик байдлаар үүсгэнэ.
+	•	revalidate = 60 – 1 минут тутамд дахин шалгана.
+	•	/api/revalidate route-оор on-demand revalidate хийх боломжтой.
+	•	Дэлгэрэнгүй хуудас:
+	•	Баруун талд Google Maps iframe
+	•	Зүүн талд байгууллагын мэдээлэл (price, status, contact, address).
+
+3. /yellow-books/search – SSR + Client Map Island
+
+Файл: apps/web/src/app/yellow-books/search/page.tsx
+
+Гол санаа:
+	•	SSR хайлт – dynamic = 'force-dynamic', searchParams.q-д тулгуурлан сервер дээрээс хайлт.
+	•	/yellow-books бүх дата → сервер дээр filter хийгээд жагсаалт буцаана.
+	•	Suspense fallback:
+	•	“⏳ “ХХХ” хайлтын үр дүнг серверээс ачааллаж байна…” гэсэн мессеж stream-лэгдэнэ.
+	•	Map island – SearchMapIsland гэдэг client component:
+	•	Хайлтын үр дүнгийн координатуудыг google map дээр cluster болгож харуулна.
+
+4. Performance Notes – perf.md
+
+Root-д байгаа perf.md файлд:
+	•	TTFB, LCP-ийн өмнөх/дараах хэмжилт
+	•	Яагаад:
+	•	ISR
+	•	SSG
+	•	SSR + streaming
+	•	Client island-ууд тус бүр performance-д нөлөөлж байгааг тайлбарласан.
+
+⸻
+
+🐳 Lab 5 – Docker + AWS ECR + CI
+
+Lab 5-ийн зорилго: монорепо-гоо Docker болгож, GitHub Actions-оор build/push хийж, AWS ECR дээр байрлуулах.
+
+1. Dockerfiles
+
+API (apps/api/Dockerfile)
+	•	Root файлууд + apps, libs, prisma-г COPY
+	•	npm ci
+	•	npx nx build api --configuration=production
+	•	npx prisma generate
+	•	CMD ["node", "apps/api/dist/apps/api/src/main.js"]
+	•	EXPOSE 3333
+
+Web (apps/web/Dockerfile)
+	•	Root + apps/libs COPY
+	•	npm ci
+	•	npx nx build web --configuration=production
+	•	CMD ["node", "apps/web/.next/standalone/server.js"] маягаар Next production server
+	•	EXPOSE 3000
+
+2. Local sanity check
+
+# API image build + run
+docker build -f apps/api/Dockerfile -t xz-lab-3-api:local .
+docker run --rm -p 3333:3333 --env-file .env xz-lab-3-api:local
+
+# Web image build + run
+docker build -f apps/web/Dockerfile -t xz-lab-3-web:local .
+docker run --rm -p 3000:3000 --env-file .env xz-lab-3-web:local
+
+	•	API: http://localhost:3333/yellow-books → JSON гарна.
+	•	Web: http://localhost:3000 → YellowBook UI бүрэн ачаалдаг.
+
+3. AWS ECR
+
+Region: ap-southeast-1, Account: 179263214332.
+
+Хоёр private repo:
+	•	xz-lab-3-api
+	•	xz-lab-3-web
+
+Жишээ image URI-үүд:
+
+179263214332.dkr.ecr.ap-southeast-1.amazonaws.com/xz-lab-3-api:latest
+179263214332.dkr.ecr.ap-southeast-1.amazonaws.com/xz-lab-3-web:latest
+
+Хоёуланд нь:
+	•	Image status: Active
+	•	Digest (sha256:...) бүртгэгдсэн
+	•	Vulnerability scan – Complete.
+
+4. GitHub Actions – CI + Push to ECR
+
+Файл: .github/workflows/ci.yml
+
+Үндсэн алхмууд:
+	1.	Checkout + Node setup
+	2.	Install – npm ci
+	3.	Nx quality checks
+
+npx nx run-many -t lint test build typecheck
+
+
+	4.	AWS credentials configure
+GitHub Secrets:
+	•	AWS_ACCESS_KEY_ID
+	•	AWS_SECRET_ACCESS_KEY
+	•	AWS_REGION
+	•	ECR_REGISTRY
+	•	ECR_REPO_API
+	•	ECR_REPO_WEB
+	5.	ECR login – aws-actions/amazon-ecr-login.
+	6.	Set image tags
+
+API_IMAGE=${ECR_REGISTRY}/${ECR_REPO_API}:${GITHUB_SHA}
+WEB_IMAGE=${ECR_REGISTRY}/${ECR_REPO_WEB}:${GITHUB_SHA}
+
+
+	7.	Build & push
+
+docker build -f apps/api/Dockerfile -t "$API_IMAGE" .
+docker push "$API_IMAGE"
+
+docker build -f apps/web/Dockerfile -t "$WEB_IMAGE" .
+docker push "$WEB_IMAGE"
+
+
+	8.	CI run ногоон → ECR дээр :latest болон :<sha> tag-тай image-үүд гарч ирдэг.
+
+⸻
+
+🔧 Useful Scripts
+
+// package.json (жишээ)
+"scripts": {
+  "dev:web": "nx dev web",
+  "dev:api": "nx serve api",
+  "build:web": "nx build web --configuration=production",
+  "build:api": "nx build api --configuration=production",
+  "prisma:seed": "node prisma/seed.cjs"
+}
 
 
 ⸻
 
 📌 Design Decisions
-	•	Nx chosen for modular architecture and shared contract.
-	•	Zod used for runtime & compile-time safety.
-	•	Prisma chosen for simplicity + migration workflow.
-	•	Next.js App Router for parallel routes + server rendering.
-	•	TailwindCSS for rapid UI development based on provided Figma.
+	•	Nx монорепо – contract, config, app-уудыг цэвэр тусгаарласан.
+	•	Zod contract – API болон Web хоёулаа ижил schema ашигласнаар type safety + validation.
+	•	Prisma + Postgres – migration, seeding, Prisma Studio ашиглахад тохиромжтой.
+	•	Rendering strategies (Lab 4) – ISR / SSG / SSR + streaming-ийн ялгааг бодитоор харуулахын тулд гурван өөр хуудас.
+	•	Docker + ECR (Lab 5) – lab-ийн дараагийн алхам болох EKS deploy-д бэлэн байхаар CI-гоор автоматаар image build/push хийдэг болгосон.
 
-⸻
-
-🎯 Conclusion
-
-This Lab 3 submission includes:
-
-✔ Nx Monorepo
-✔ Next.js + Express apps
-✔ Shared contract layer
-✔ Prisma model + migrations
-✔ Seeder with 10 realistic listings
-✔ Fully working API
-✔ Frontend that renders real data from backend
-✔ CI attached through Nx Cloud
-✔ Complete documentation
-
-Project is fully ready for grading.
-
-⸻
-
-📄 License
-
-MIT License.
-
----
 ```
