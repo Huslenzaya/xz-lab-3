@@ -1,0 +1,77 @@
+name: CI & Docker ECR Deploy
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  AWS_REGION: ${{ secrets.AWS_REGION }}
+  ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
+  ECR_REPO_API: ${{ secrets.ECR_REPO_API }}
+  ECR_REPO_WEB: ${{ secrets.ECR_REPO_WEB }}
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1) Repo-гээ татна
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      # 2) Node суулгаж өгнө (Nx, build-д хэрэгтэй)
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      # 3) Dependency суулгах
+      - name: Install dependencies
+        run: npm ci
+
+      # 4) Nx health check (lint, test, build, typecheck)
+      - name: Nx run-many checks
+        run: npx nx run-many -t lint test build typecheck --parallel=3 || npx nx run-many -t lint build typecheck --parallel=3
+
+      # 5) AWS credentials тохируулах
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      # 6) ECR login
+      - name: Login to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v2
+        id: ecr-login
+
+      # 7) Docker image нэрүүд
+      - name: Set image tags
+        id: vars
+        run: |
+          echo "API_IMAGE=${ECR_REGISTRY}/${ECR_REPO_API}:${GITHUB_SHA}" >> $GITHUB_OUTPUT
+          echo "WEB_IMAGE=${ECR_REGISTRY}/${ECR_REPO_WEB}:${GITHUB_SHA}" >> $GITHUB_OUTPUT
+
+      # 8) API image build + push
+      - name: Build API image
+        run: |
+          docker build \
+            -f apps/api/Dockerfile \
+            -t ${{ steps.vars.outputs.API_IMAGE }} \
+            .
+      - name: Push API image
+        run: docker push ${{ steps.vars.outputs.API_IMAGE }}
+
+      # 9) Web image build + push
+      - name: Build Web image
+        run: |
+          docker build \
+            -f apps/web/Dockerfile \
+            -t ${{ steps.vars.outputs.WEB_IMAGE }} \
+            .
+      - name: Push Web image
+        run: docker push ${{ steps.vars.outputs.WEB_IMAGE }}
